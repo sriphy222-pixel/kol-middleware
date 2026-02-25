@@ -1,8 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.influencers import router as influencer_router
-from app.database import engine, Base
-from app.models import influencer
+from app.api.auth import router as auth_router
+from app.database import engine, Base, get_db
+from app.models import influencer, user
+from sqlalchemy.orm import Session
+from app.core.security import get_password_hash
 
 # Create tables if not exist
 Base.metadata.create_all(bind=engine)
@@ -19,6 +22,18 @@ app.add_middleware(
 )
 
 app.include_router(influencer_router, prefix="/api/v1/influencers", tags=["influencers"])
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
+
+@app.on_event("startup")
+def create_default_user():
+    db = next(get_db())
+    admin = db.query(user.User).filter(user.User.username == "admin").first()
+    if not admin:
+        hashed_pwd = get_password_hash("admin123")
+        new_admin = user.User(username="admin", email="admin@example.com", hashed_password=hashed_pwd, role="admin")
+        db.add(new_admin)
+        db.commit()
+        print("Created default admin user: admin / admin123")
 
 @app.get("/")
 def read_root():
