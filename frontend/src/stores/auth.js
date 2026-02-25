@@ -17,7 +17,8 @@ export const useAuthStore = defineStore('auth', {
         params.append('username', username)
         params.append('password', password)
         
-        const response = await axios.post('http://localhost:8000/api/v1/auth/token', params)
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+        const response = await axios.post(`${baseUrl}/auth/token`, params)
         const { access_token } = response.data
         
         this.token = access_token
