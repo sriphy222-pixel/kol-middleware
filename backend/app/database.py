@@ -2,7 +2,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./kol_system.db"
+import os
+
+# Use in-memory SQLite if VERCEL environment variable is set
+if os.environ.get("VERCEL"):
+    SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+else:
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./kol_system.db"
+
 # For PostgreSQL later:
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
